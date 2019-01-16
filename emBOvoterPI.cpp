@@ -19,7 +19,7 @@ void PrintTime()
     struct timeval tv;
     time_t nowtime;
     struct tm *nowtm;
-    char tmbuf[64]
+    char tmbuf[64];
 
     gettimeofday(&tv, NULL);
     nowtime = tv.tv_sec;
