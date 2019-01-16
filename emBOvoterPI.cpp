@@ -14,17 +14,23 @@ static volatile int badstate;
 // Time of last change
 struct timeval last_change;
 
-void PrintTime()
+void PrintTime ()
 {
     struct timeval tv;
-    time_t nowtime;
-    struct tm *nowtm;
-    char tmbuf[64];
+    struct tm* ptm;
+    char time_string[40];
+    long milliseconds;
 
-    gettimeofday(&tv, NULL);
-    nowtime = tv.tv_sec;
-    nowtm = localtime(&nowtime);
-    strftime(tmbuf, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", nowtm);
+    /* Obtain the time of day, and convert it to a tm struct. */
+    gettimeofday (&tv, NULL);
+    ptm = localtime (&tv.tv_sec);
+    /* Format the date and time, down to a single second. */
+    strftime (time_string, sizeof (time_string), "%Y-%m-%d %H:%M:%S", ptm);
+    /* Compute milliseconds from microseconds. */
+    milliseconds = tv.tv_usec / 1000;
+    /* Print the formatted time, in seconds, followed by a decimal point
+      and the milliseconds. */
+    printf ("%s.%03ld\n", time_string, milliseconds);
 }
 
 // Handler for interrupt
