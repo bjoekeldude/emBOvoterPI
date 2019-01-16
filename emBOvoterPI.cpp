@@ -33,7 +33,7 @@ void great(void) {
             printf("Rising\n");
         }
 
-        state = !state;
+        greatstate = !greatstate;
     }
 
     last_change = now;
@@ -57,7 +57,7 @@ void bad(void) {
             printf("Rising\n");
         }
 
-        state = !state;
+        badstate = !badstate;
     }
 
     last_change = now;
