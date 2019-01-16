@@ -13,8 +13,7 @@ static volatile int greatstate;
 static volatile int badstate;
 // Time of last change
 struct timeval last_change;
-struct timespec tim, tim2;
-tim.tv_nsec = 5000;
+
 
 // Handler for interrupt
 void great(void) {
@@ -92,6 +91,6 @@ int main(void) {
 
     // Waste time but not CPU
     for (;;) {
-        nanosleep(&tim, &tim2);
+        nanosleep(1000);
     }
 }
