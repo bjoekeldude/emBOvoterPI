@@ -27,13 +27,7 @@ void great(void) {
 
     // Filter jitter
     if (diff > IGNORE_CHANGE_BELOW_USEC) {
-        if (greatstate) {
-            printf("Falling\n");
-        }
-        else {
-            printf("Rising\n");
-        }
-
+        printf("This was good!\n");
         greatstate = !greatstate;
     }
 
@@ -51,13 +45,7 @@ void bad(void) {
 
     // Filter jitter
     if (diff > IGNORE_CHANGE_BELOW_USEC) {
-        if (badstate) {
-            printf("Falling\n");
-        }
-        else {
-            printf("Rising\n");
-        }
-
+        printf("This was bad!\n");
         badstate = !badstate;
     }
 
@@ -77,8 +65,8 @@ int main(void) {
     gettimeofday(&last_change, NULL);
 
     // Bind to interrupt
-    wiringPiISR(GREATPIN, INT_EDGE_BOTH, &great);
-    wiringPiISR(BADPIN, INT_EDGE_BOTH, &bad);
+    wiringPiISR(GREATPIN, INT_EDGE_FALLING, &great);
+    wiringPiISR(BADPIN, INT_EDGE_FALLING, &bad);
 
     // Get initial state of pin
     greatstate  =   digitalRead(GREATPIN);
@@ -87,7 +75,7 @@ int main(void) {
 
     printf("Started!\n "
            "initial greatstate is %d\n"
-           "initial badstate is\n",greatstate,badstate);
+           "initial  badstate  is %d\n",greatstate,badstate);
 
     // Waste time but not CPU
     for (;;) {
