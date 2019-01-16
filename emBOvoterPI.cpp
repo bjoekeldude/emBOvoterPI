@@ -25,7 +25,6 @@ void PrintTime()
     nowtime = tv.tv_sec;
     nowtm = localtime(&nowtime);
     strftime(tmbuf, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", nowtm);
-    free(tmbuf);
 }
 
 // Handler for interrupt
