@@ -26,7 +26,7 @@ void great(void) {
 
     // Filter jitter
     if (diff > IGNORE_CHANGE_BELOW_USEC) {
-        if (state) {
+        if (greatstate) {
             printf("Falling\n");
         }
         else {
@@ -50,7 +50,7 @@ void bad(void) {
 
     // Filter jitter
     if (diff > IGNORE_CHANGE_BELOW_USEC) {
-        if (state) {
+        if (badstate) {
             printf("Falling\n");
         }
         else {
