@@ -9,7 +9,8 @@
 #define IGNORE_CHANGE_BELOW_USEC 10000
 
 // Current state of the pin
-static volatile int state;
+static volatile int greatstate;
+static volatile int badstate;
 // Time of last change
 struct timeval last_change;
 
@@ -79,14 +80,13 @@ int main(void) {
     wiringPiISR(BADPIN, INT_EDGE_BOTH, &bad);
 
     // Get initial state of pin
-    state = digitalRead(PIN);
+    greatstate  =   digitalRead(GREATPIN);
+    badstate    =   digitalRead(BADPIN);
 
-    if (state) {
-        printf("Started! Initial state is on\n");
-    }
-    else {
-        printf("Started! Initial state is off\n");
-    }
+
+    printf("Started!\n "
+           "initial greatstate is %d\n"
+           "initial badstate is\n",greatstate,badstate);
 
     // Waste time but not CPU
     for (;;) {
