@@ -30,7 +30,7 @@ void PrintTime ()
     milliseconds = tv.tv_usec / 1000;
     /* Print the formatted time, in seconds, followed by a decimal point
       and the milliseconds. */
-    printf ("%s.%03ld\n", time_string, milliseconds);
+    printf ("%s.%03ld -", time_string, milliseconds);
 }
 
 // Handler for interrupt
@@ -46,7 +46,7 @@ void great(void) {
     // Filter jitter
     if (diff > IGNORE_CHANGE_BELOW_USEC) {
         PrintTime();
-        printf("- This was good!\n");
+        printf("This was good!\n");
         greatstate = !greatstate;
     }
 
@@ -65,7 +65,7 @@ void bad(void) {
     // Filter jitter
     if (diff > IGNORE_CHANGE_BELOW_USEC) {
         PrintTime();
-        printf("- This was bad!\n");
+        printf("This was bad!\n");
         badstate = !badstate;
     }
 
