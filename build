@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Building emBOvoterPi"
+gcc -lwiringPi -lboost_system -lstdc++ -o emBOvoterPI emBOvoterPI.cpp -std=c++14

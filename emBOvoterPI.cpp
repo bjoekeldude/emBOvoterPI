@@ -1,104 +1,111 @@
 #include <stdio.h>
+#include <iostream>
 #include <sys/time.h>
 #include <wiringPi.h>
+#include <ctime>
+#include <cerrno>
+#include <cstring>
+#include <chrono>
+#include "Mini-Log/miniLog.hpp"
+#include <string>
 
-// Which GPIO pin we're using
+using namespace std::literals::chrono_literals;
 #define GREATPIN 27
 #define BADPIN 25
-// How much time a change must be since the last in order to count as a change
-#define IGNORE_CHANGE_BELOW_USEC 10000
+constexpr auto debounce_time = 20ms;
 
-// Current state of the pin
 static volatile int greatstate;
 static volatile int badstate;
-// Time of last change
-struct timeval last_change;
+static auto last_change = std::chrono::system_clock::now();
+const std::string log_path {"./emBOvotes"};
+
+miniLog::miniLogger ballotBox{log_path, "emBO++ Ballot-Box"};
+miniLog::miniMessage badLog{miniLog::miniMessage_T::status, std::string{"-"}};
+miniLog::miniMessage goodLog{miniLog::miniMessage_T::status, std::string{"+"}};
+
+
+
 
 void PrintTime ()
 {
-    struct timeval tv;
-    struct tm* ptm;
-    char time_string[40];
-    long milliseconds;
-
-    /* Obtain the time of day, and convert it to a tm struct. */
-    gettimeofday (&tv, NULL);
-    ptm = localtime (&tv.tv_sec);
-    /* Format the date and time, down to a single second. */
-    strftime (time_string, sizeof (time_string), "%Y-%m-%d %H:%M:%S", ptm);
-    /* Compute milliseconds from microseconds. */
-    milliseconds = tv.tv_usec / 1000;
-    /* Print the formatted time, in seconds, followed by a decimal point
-      and the milliseconds. */
-    printf ("%s.%03ld -", time_string, milliseconds);
+    auto time1 = std::chrono::system_clock::now();
+    std::time_t time = std::chrono::system_clock::to_time_t(time1); 
+    std::cout << std::ctime(&time);
 }
 
-// Handler for interrupt
 void great(void) {
-    struct timeval now;
-    unsigned long diff;
-
-    gettimeofday(&now, NULL);
-
-    // Time difference in usec
-    diff = (now.tv_sec * 1000000 + now.tv_usec) - (last_change.tv_sec * 1000000 + last_change.tv_usec);
-
-    // Filter jitter
-    if (diff > IGNORE_CHANGE_BELOW_USEC) {
+    auto now = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_since_last_change = now-last_change;
+    if ( elapsed_since_last_change > debounce_time) {
         PrintTime();
-        printf("This was good!\n");
-        greatstate = !greatstate;
+	std::cout << "This was good!\n";
+        ballotBox << goodLog;
+	greatstate = !greatstate;
     }
 
     last_change = now;
 }
 
 void bad(void) {
-    struct timeval now;
-    unsigned long diff;
-
-    gettimeofday(&now, NULL);
-
-    // Time difference in usec
-    diff = (now.tv_sec * 1000000 + now.tv_usec) - (last_change.tv_sec * 1000000 + last_change.tv_usec);
-
-    // Filter jitter
-    if (diff > IGNORE_CHANGE_BELOW_USEC) {
+    auto now = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_since_last_change = now-last_change;
+    if ( elapsed_since_last_change > debounce_time) {
         PrintTime();
-        printf("This was bad!\n");
-        badstate = !badstate;
+	std::cout << "This was bad!\n";
+        ballotBox << badLog;
+	badstate = !badstate;
     }
 
     last_change = now;
 }
 
+void activateInterrupts(){
+	try{
+		pinMode(GREATPIN,	OUTPUT);
+		pinMode(BADPIN	,	OUTPUT);
+		wiringPiISR(GREATPIN,	INT_EDGE_FALLING,	&great);
+		wiringPiISR(BADPIN,	INT_EDGE_FALLING,	&bad);
+		greatstate	=	digitalRead(GREATPIN);
+		badstate	=	digitalRead(BADPIN);
+	}
+	catch(const std::exception& e){
+		std::cout << " activating Interrupts caught a std:exception, with message '"
+			<< e.what() << "'\n";
+	}
+}
+
+struct MillisecondTimer_t{
+    struct timespec timeOut, remains;
+    MillisecondTimer_t(int ms){
+	    timeOut.tv_sec = 0;
+	    timeOut.tv_nsec= 1000*1000*ms;
+    }
+};
+
+void initMessage(){
+	std::cout << 	"emBO++ Votersystem successfully launched!" << std::endl <<
+			"initial greatstate is " << greatstate << std::endl << 
+			"initial  badstate  is " << badstate << std::endl;
+}
 
 int main(void) {
-    // Init
-    wiringPiSetup();
-    // Set pin to output in case it's not
-    pinMode(GREATPIN, OUTPUT);
-    pinMode(BADPIN, OUTPUT);
-
-
-    // Time now
-    gettimeofday(&last_change, NULL);
-
-    // Bind to interrupt
-    wiringPiISR(GREATPIN, INT_EDGE_FALLING, &great);
-    wiringPiISR(BADPIN, INT_EDGE_FALLING, &bad);
-
-    // Get initial state of pin
-    greatstate  =   digitalRead(GREATPIN);
-    badstate    =   digitalRead(BADPIN);
-
-
-    printf("Started!\n "
-           "initial greatstate is %d\n"
-           "initial  badstate  is %d\n",greatstate,badstate);
-
-    // Waste time but not CPU
+    
+    MillisecondTimer_t timer{10};
+	    
+	    
+    try{
+    	wiringPiSetup();
+    	activateInterrupts();
+    }
+    catch(std::exception &e){
+	    std::cout << " The initialization caught a std::exception, with message '"
+		    << e.what() << "'\n";
+	    return 1;
+    }
+    
+    initMessage();
+    
     for (;;) {
-        nanosleep(1000);
+        nanosleep(&timer.timeOut,&timer.remains); //wait for interrupt
     }
 }
