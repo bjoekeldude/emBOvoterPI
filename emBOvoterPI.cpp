@@ -1,13 +1,8 @@
-#include <stdio.h>
 #include <iostream>
-#include <sys/time.h>
 #include <wiringPi.h>
 #include <ctime>
-#include <cerrno>
-#include <cstring>
 #include <chrono>
 #include "Mini-Log/miniLog.hpp"
-#include <string>
 
 using namespace std::literals::chrono_literals;
 #define GREATPIN 27
