@@ -9,20 +9,23 @@ using namespace std::literals::chrono_literals;
 #define BADPIN 13
 #define DOUBLEGREATPIN 15
 #define DOUBLEBADPIN 16
-#define MEDIUMPIN 18
+#define NEUTRALPIN 18
 constexpr auto debounce_time = 20ms;
 
 static volatile int greatstate;
 static volatile int badstate;
 static volatile int doublegreatstate;
 static volatile int doublebadstate;
-static volatile int mediumstate;
+static volatile int neutralstate;
 static auto last_change = std::chrono::system_clock::now();
 const std::string log_path {"./emBOvotes"};
 
 miniLog::miniLogger ballotBox{log_path, "emBO++ Ballot-Box"};
 miniLog::miniMessage badLog{miniLog::miniMessage_T::status, std::string{"-"}};
-miniLog::miniMessage goodLog{miniLog::miniMessage_T::status, std::string{"+"}};
+miniLog::miniMessage greatLog{miniLog::miniMessage_T::status, std::string{"+"}};
+miniLog::miniMessage doublegreatLog{miniLog::miniMessage_T::status, std::string{"++"}};
+miniLog::miniMessage doublebadLog{miniLog::miniMessage_T::status, std::string{"--"}};
+miniLog::miniMessage neutralLog{miniLog::miniMessage_T::status, std::string{"/"}};
 
 
 
@@ -40,7 +43,7 @@ void great(void) {
     if ( elapsed_since_last_change > debounce_time) {
         PrintTime();
 	std::cout << "+";
-        ballotBox << goodLog;
+        ballotBox << greatLog;
 	greatstate = !greatstate;
     }
 
@@ -66,7 +69,7 @@ void doublebad(void) {
     if ( elapsed_since_last_change > debounce_time) {
         PrintTime();
 	std::cout << "--";
-        ballotBox << badLog;
+        ballotBox << doublebadLog;
 	doublebadstate = !doublebadstate;
     }
 
@@ -79,21 +82,21 @@ void doublegreat(void) {
     if ( elapsed_since_last_change > debounce_time) {
         PrintTime();
 	std::cout << "++";
-        ballotBox << badLog;
+        ballotBox << doublegreatLog;
 	doublegreatstate = !doublegreatstate;
     }
 
     last_change = now;
 }
 
-void medium(void) {
+void neutral(void) {
     auto now = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_since_last_change = now-last_change;
     if ( elapsed_since_last_change > debounce_time) {
         PrintTime();
 	std::cout << "/";
-        ballotBox << badLog;
-	mediumstate = !mediumstate;
+        ballotBox << neutralLog;
+	neutralstate = !neutralstate;
     }
 
     last_change = now;
@@ -105,17 +108,17 @@ void activateInterrupts(){
 		pinMode(BADPIN	,	OUTPUT);
 		pinMode(DOUBLEGREATPIN	,	OUTPUT);
 		pinMode(DOUBLEBADPIN	,	OUTPUT);
-		pinMode(MEDIUMPIN	,	OUTPUT);
+		pinMode(NEUTRALPIN	,	OUTPUT);
 		wiringPiISR(GREATPIN,	INT_EDGE_FALLING,	&great);
 		wiringPiISR(BADPIN,	INT_EDGE_FALLING,	&bad);
 		wiringPiISR(DOUBLEGREATPIN,	INT_EDGE_FALLING,	&doublegreat);
 		wiringPiISR(DOUBLEBADPIN,	INT_EDGE_FALLING,	&doublebad);
-		wiringPiISR(MEDIUMPIN,	INT_EDGE_FALLING,	&medium);
+		wiringPiISR(NEUTRALPIN,	INT_EDGE_FALLING,	&neutral);
 		greatstate	=	digitalRead(GREATPIN);
 		badstate	=	digitalRead(BADPIN);
 		doublegreatstate	=	digitalRead(DOUBLEGREATPIN);
 		doublebadstate	=	digitalRead(DOUBLEBADPIN);
-		mediumstate	=	digitalRead(MEDIUMPIN);
+		neutralstate	=	digitalRead(NEUTRALPIN);
 	}
 	catch(const std::exception& e){
 		std::cout << " activating Interrupts caught a std:exception, with message '"
@@ -135,7 +138,7 @@ void initMessage(){
 	std::cout << 	"emBO++ Votersystem successfully launched!" << std::endl <<
 			"initial doublegreatstate is " << doublegreatstate << std::endl << 
 			"initial  greatstate  is " << greatstate << std::endl
-			"initial  mediumstate  is " << mediumstate << std::endl
+			"initial  neutralstate  is " << neutralstate << std::endl
 			"initial  badstate  is " << badstate << std::endl
 			"initial  doublebadstate  is " << doublebadstate << std::endl;
 }
