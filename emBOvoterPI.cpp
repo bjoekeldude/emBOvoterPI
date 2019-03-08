@@ -137,9 +137,9 @@ struct MillisecondTimer_t{
 void initMessage(){
 	std::cout << 	"emBO++ Votersystem successfully launched!" << std::endl <<
 			"initial doublegreatstate is " << doublegreatstate << std::endl << 
-			"initial  greatstate  is " << greatstate << std::endl
-			"initial  neutralstate  is " << neutralstate << std::endl
-			"initial  badstate  is " << badstate << std::endl
+			"initial  greatstate  is " << greatstate << std::endl <<
+			"initial  neutralstate  is " << neutralstate << std::endl <<
+			"initial  badstate  is " << badstate << std::endl <<
 			"initial  doublebadstate  is " << doublebadstate << std::endl;
 }
 
